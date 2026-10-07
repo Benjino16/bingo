@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import type { PatternMatch } from '../bingo/patterns'
+import { vibrate } from '../lib/haptics'
 
 export interface CelebrationData {
   id: number
@@ -15,6 +16,7 @@ interface Props {
 export function Celebration({ celebration, onDone, durationMs = 2200 }: Props) {
   useEffect(() => {
     if (!celebration) return
+    vibrate([40, 60, 80])
     const timer = setTimeout(onDone, durationMs)
     return () => clearTimeout(timer)
   }, [celebration, onDone, durationMs])

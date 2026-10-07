@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { findMatches, newMatches } from '../bingo/patterns'
 import type { BingoBoard } from '../bingo/types'
+import { vibrate } from '../lib/haptics'
 import { Achievements } from './Achievements'
 import { BingoGrid } from './BingoGrid'
 import { Celebration, type CelebrationData } from './Celebration'
@@ -29,6 +30,7 @@ export function PlayView({ board, onToggle, onReset, onBack }: Props) {
 
   const handleToggle = (index: number) => {
     setConfirmReset(false)
+    vibrate(10)
     onToggle(index)
   }
 
@@ -48,7 +50,8 @@ export function PlayView({ board, onToggle, onReset, onBack }: Props) {
     <main className="view view--play">
       <header className="toolbar">
         <button type="button" className="btn btn--ghost" onClick={onBack}>
-          ← Liste bearbeiten
+          ← <span className="long">Liste bearbeiten</span>
+          <span className="short">Liste</span>
         </button>
         <span className="toolbar__title">
           {board.size}×{board.size}
@@ -60,7 +63,13 @@ export function PlayView({ board, onToggle, onReset, onBack }: Props) {
           onBlur={() => setConfirmReset(false)}
           disabled={!hasMarks}
         >
-          {confirmReset ? 'Wirklich zurücksetzen?' : 'Zurücksetzen'}
+          {confirmReset ? (
+            <>
+              Wirklich<span className="long"> zurücksetzen</span>?
+            </>
+          ) : (
+            'Zurücksetzen'
+          )}
         </button>
       </header>
 

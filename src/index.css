@@ -52,13 +52,28 @@
 body {
   margin: 0;
   background: var(--bg);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 #root {
   min-height: 100svh;
   display: flex;
   justify-content: center;
-  padding: 24px 16px 48px;
+  /* Notch / Home-Indicator berücksichtigen (viewport-fit=cover). */
+  padding: max(24px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(48px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
+
+button {
+  /* Kein Doppeltipp-Zoom, keine Verzögerung beim Antippen. */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Kurz-/Langversion von Beschriftungen je nach Breite. */
+.short {
+  display: none;
 }
 
 h1 {
@@ -106,8 +121,10 @@ p {
     opacity 0.15s;
 }
 
-.btn:hover:not(:disabled) {
-  border-color: var(--muted);
+@media (hover: hover) {
+  .btn:hover:not(:disabled) {
+    border-color: var(--muted);
+  }
 }
 
 .btn:active:not(:disabled) {
@@ -149,7 +166,8 @@ p {
   min-height: 260px;
   resize: vertical;
   padding: 14px 16px;
-  font: 15px/1.6 var(--mono);
+  /* Mind. 16px, sonst zoomt iOS beim Fokussieren hinein. */
+  font: 16px/1.6 var(--mono);
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border);
@@ -268,12 +286,19 @@ p {
   line-height: 1.2;
   cursor: pointer;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
   transition: background 0.15s;
 }
 
-.cell:hover {
-  background: color-mix(in srgb, var(--marker) 5%, var(--surface));
+@media (hover: hover) {
+  .cell:hover {
+    background: color-mix(in srgb, var(--marker) 5%, var(--surface));
+  }
+}
+
+.cell:active {
+  background: color-mix(in srgb, var(--marker) 10%, var(--surface));
 }
 
 .cell:focus-visible {
@@ -357,6 +382,7 @@ p {
 
 .badges {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   margin: 0;
   padding: 0;
@@ -385,6 +411,8 @@ p {
   left: 50%;
   top: 40%;
   transform: translate(-50%, -50%);
+  width: max-content;
+  max-width: calc(100vw - 32px);
   padding: 18px 32px;
   border-radius: 20px;
   background: var(--surface);
@@ -412,6 +440,133 @@ p {
   from {
     transform: translate(-50%, -50%) scale(0.4) rotate(-6deg);
     opacity: 0;
+  }
+}
+
+/* ---------- Handy ---------- */
+
+@media (max-width: 480px) {
+  #root {
+    padding-top: max(12px, env(safe-area-inset-top));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  .long {
+    display: none;
+  }
+
+  .short {
+    display: inline;
+  }
+
+  /* Setup: Textfeld füllt den Platz, Buttons unten in Daumenreichweite. */
+  .view--setup {
+    min-height: calc(100svh - 28px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+
+  .entries {
+    flex: 1;
+    min-height: 200px;
+    resize: none;
+  }
+
+  .setup__actions {
+    position: sticky;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    flex-direction: column-reverse;
+  }
+
+  .setup__actions .btn,
+  .warning__actions .btn {
+    flex: 1;
+    padding: 14px 18px;
+  }
+
+  .setup__actions .btn--ghost {
+    background: var(--bg);
+  }
+
+  .setup__actions .btn--primary {
+    box-shadow: var(--shadow);
+  }
+
+  .checkbox input {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Spielen: Board über die volle Breite, keine Leerräume. */
+  .view--play {
+    gap: 12px;
+  }
+
+  .toolbar .btn--ghost {
+    padding: 10px 12px;
+    min-height: 44px;
+  }
+
+  .board {
+    border-radius: 8px;
+    max-width: max(280px, calc(100svh - 150px));
+  }
+
+  .cell {
+    padding: 4%;
+    hyphens: auto;
+  }
+
+  .achievements {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .celebration {
+    padding: 14px 20px;
+  }
+
+  .celebration__title {
+    font-size: 2rem;
+  }
+}
+
+/* Handy quer: Board links, Infos rechts. */
+@media (max-height: 500px) and (orientation: landscape) {
+  #root {
+    padding-top: max(8px, env(safe-area-inset-top));
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+
+  .view--play {
+    max-width: none;
+    display: grid;
+    grid-template-columns: auto minmax(180px, 1fr);
+    grid-template-rows: auto 1fr;
+    gap: 8px 16px;
+  }
+
+  .view--play .board {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    width: calc(100svh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    max-width: none;
+  }
+
+  .view--play .toolbar {
+    grid-column: 2;
+    flex-wrap: wrap;
+  }
+
+  .view--play .achievements {
+    grid-column: 2;
+    flex-direction: column;
+    align-items: flex-start;
+    align-self: start;
   }
 }
 
